@@ -2,3 +2,5 @@
 /.vscode
 /__pycache__
 /env
+*.mp4
+*.webm

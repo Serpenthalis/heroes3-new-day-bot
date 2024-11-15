@@ -1,4 +1,4 @@
-import tweepy
+import atproto
 import datetime
 import os
 import random
@@ -11,25 +11,9 @@ from pathlib import Path
 from moviepy.editor import *
 from http.client import HTTPException
 
-# Twitter Init
-api_key = 
-api_key_secret = 
-access_token = 
-access_token_secret = 
-bearer_token = 
-client_id = 
-client_secret = 
-
-auth = tweepy.OAuth1UserHandler(consumer_key=api_key,
-                                consumer_secret=api_key_secret,
-                                access_token=access_token,
-                                access_token_secret=access_token_secret)
-client = tweepy.Client(consumer_key=api_key,
-                       consumer_secret=api_key_secret,
-                       access_token=access_token,
-                       access_token_secret=access_token_secret)
-api = tweepy.API(auth)
-
+# BlueSky Init
+client = atproto.Client()
+profile = client.login()
 
 # Init some vars
 frame_count = 0
@@ -125,12 +109,9 @@ for i, temp_frame in enumerate(temp_frames):
 # Create video clip from image clips and audio clip
 video_clip = concatenate_videoclips(clips, method="compose")
 video_clip = video_clip.set_audio(audio_clip)
-video_clip.write_videofile("video-output.avi", fps=20, codec="png", audio_codec="aac")
+video_clip.write_videofile("video-output.webm", fps=30, codec="libvpx", audio_codec="libvorbis", bitrate="2999k")
 
-
-# Upload media (Twitter API v1, OAuth 1)
-media = api.media_upload("video-output.avi", media_category="amplify_video")
-
-
-# Send Tweet (Twitter API v1, OAuth 1)
-response = client.create_tweet(text=message, media_ids=[media.media_id])
+# Send Post
+with open("video-output.webm", "rb") as final_video_file:
+    video_data = final_video_file.read()
+    response = client.send_video(text=message, video=video_data, profile_identify="heroes3-bot.bsky.social")
